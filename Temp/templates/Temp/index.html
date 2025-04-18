@@ -1,33 +1,353 @@
-{% if temp_list %}
-    <ul>
-    {% for hardware in temp_list %}
-        <li style="color: green;">
-            Temperature: {{ hardware.hardTemp }}°C 
-            (Published: {{ hardware.pub_date|date:"H:i d-m-y " }})
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No hardware data available.</p>
-{% endif %}
+{% block content %}
+<style>
+    /* Existing CSS styles remain the same */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 0;
+    }
 
-<br>
-<br>
-<br>
-<br>    
-<br>
-<br>
-<br>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 16px;
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
 
-{% if API_List %}
-    <ul>
-    {% for api in API_List %}
-        <li>
-            Temperature: {{ api.screenTemperature }}°C 
-            (Published: {{ api.time|date:"H:i d-m-y " }})
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No API data available.</p>
-{% endif %}
+    .title {
+        text-align: center;
+        margin-bottom: 24px;
+        padding: 0 10px;
+    }
+
+    .title h1 {
+        font-size: 2rem;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .title p {
+        color: #666;
+        font-size: 1rem;
+    }
+
+    .summary {
+        margin-bottom: 30px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-boxes {
+        display: flex;
+        justify-content: space-around;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .summary-box {
+        background-color: #eef9f0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        min-width: 120px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .summary-box.api {
+        background-color: #e8f2ff;
+    }
+
+    .summary-box h3 {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .summary-box p {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .boxes {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        width: 100%;
+        max-width: 1200px;
+        box-sizing: border-box;
+    }
+
+    .box {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        padding: 20px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+    }
+
+    .box h2 {
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        color: #444;
+    }
+
+    .reading {
+        background-color: #eef9f0;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .reading.api {
+        background-color: #e8f2ff;
+    }
+
+    .reading span:first-child {
+        font-size: 1.4rem;
+        color: #2e7d32;
+        font-weight: bold;
+        display: block;
+    }
+
+    .reading.api span:first-child {
+        color: #1e63b9;
+    }
+
+    .reading span:last-child {
+        font-size: 0.8rem;
+        color: #888;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .show-toggle {
+        margin-top: 10px;
+        background-color: #f1f1f1;
+        border: none;
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .show-toggle:hover {
+        background-color: #e2e2e2;
+    }
+
+    @media (max-width: 768px) {
+        .summary-boxes {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .summary-box {
+            width: 80%;
+            max-width: 250px;
+        }
+
+        .boxes {
+            flex-direction: column !important;
+            align-items: center;
+        }
+
+        .box {
+            width: 100%;
+            max-width: 90%;
+        }
+
+        .reading span:first-child {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <!-- Title -->
+    <div class="title">
+        <h1>Temperature Monitoring</h1>
+        <p>Current system temperature readings</p>
+    </div>
+
+    <!-- Summary First -->
+    <div class="summary">
+        <h2>Latest Readings</h2>
+        <div class="summary-boxes">
+            <div class="summary-box">
+                <h3>Hardware</h3>
+                <p>{% if temp_list %}{{ temp_list.0.hardTemp }}°C{% else %}--{% endif %}</p>
+            </div>
+            <div class="summary-box api">
+                <h3>API</h3>
+                <p>{% if API_List %}{{ API_List.0.screenTemperature }}°C{% else %}--{% endif %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Boxes -->
+    <div class="boxes">
+        <!-- Hardware Box -->
+        <div class="box">
+            <h2>Hardware Temperatures</h2>
+            {% if temp_list %}
+                {% for hardware in temp_list %}
+                <div class="reading {% if forloop.counter > 3 %}hidden extra-hardware{% endif %}">
+                    <span>{{ hardware.hardTemp }}°C</span>
+                    <span>{{ hardware.pub_date|date:"H:i d-m-y" }}</span>
+                </div>
+                {% endfor %}
+                {% if temp_list|length > 3 %}
+                <button class="show-toggle" onclick="toggleExtra('hardware')">Show More</button>
+                {% endif %}
+            {% else %}
+                <div class="reading">
+                    <span>No hardware data available</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- API Box -->
+        <div class="box">
+            <h2>API Temperatures</h2>
+            {% if API_List %}
+                {% for api in API_List %}
+                <div class="reading api {% if forloop.counter > 3 %}hidden extra-api{% endif %}">
+                    <span>{{ api.screenTemperature }}°C</span>
+                    <span>{{ api.time|date:"H:i d-m-y" }}</span>
+                </div>
+                {% endfor %}
+                {% if API_List|length > 3 %}
+                <button class="show-toggle" onclick="toggleExtra('api')">Show More</button>
+                {% endif %}
+            {% else %}
+                <div class="reading api">
+                    <span>No API data available</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chart Box -->
+    <div class="box" style="margin-top: 30px; width: 100%; max-width: 800px;">
+        <h2>Temperature Chart</h2>
+        <canvas id="tempChart"></canvas>
+        <div style="margin-top: 15px;">
+            <button class="show-toggle" id="toggleHardware" onclick="toggleDataset('hardware')">Show Hardware Data</button>
+            <button class="show-toggle" id="toggleAPI" onclick="toggleDataset('api')">Show API Data</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function toggleExtra(type) {
+        const extraItems = document.querySelectorAll(`.extra-${type}`);
+        const button = event.target;
+        const isHidden = extraItems[0].classList.contains("hidden");
+
+        extraItems.forEach(item => {
+            item.classList.toggle("hidden");
+        });
+
+        button.textContent = isHidden ? "Show Less" : "Show More";
+    }
+
+    // Prepare data dynamically passed from Django template into JavaScript
+    const apiTemps = [
+        {% for api in API_List %}
+        {{ api.screenTemperature }},
+        {% endfor %}
+    ];
+
+    const labels = [
+        {% for api in API_List %}
+        "{{ api.time|date:"H:i d-m-y" }}",
+        {% endfor %}
+    ];
+
+    const hardwareTemps = [
+        {% for hardware in temp_list %}
+        {{ hardware.hardTemp }},
+        {% endfor %}
+    ];
+
+    const hardwareLabels = [
+        {% for hardware in temp_list %}
+        "{{ hardware.pub_date|date:"H:i d-m-y" }}",
+        {% endfor %}
+    ];
+
+    const ctx = document.getElementById('tempChart').getContext('2d');
+    const tempChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'API Temp (°C)',
+                    data: apiTemps,
+                    borderColor: '#1e63b9',
+                    backgroundColor: 'rgba(30, 99, 185, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    hidden: false // Initially visible
+                },
+                {
+                    label: 'Hardware Temp (°C)',
+                    data: hardwareTemps,
+                    borderColor: '#2e7d32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    hidden: false // Initially visible
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: { display: true, text: 'Temperature (°C)' }
+                },
+                x: {
+                    title: { display: true, text: 'Time' }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { mode: 'index', intersect: false }
+            }
+        }
+    });
+
+    // Toggle function for chart datasets
+    function toggleDataset(type) {
+        const dataset = tempChart.data.datasets.find(d => d.label.toLowerCase().includes(type.toLowerCase()));
+        dataset.hidden = !dataset.hidden;
+        tempChart.update();
+
+        // Update button text
+        document.getElementById(`toggle${type.charAt(0).toUpperCase() + type.slice(1)}`).textContent =
+            dataset.hidden ? `Show ${type.charAt(0).toUpperCase() + type.slice(1)} Data` : `Hide ${type.charAt(0).toUpperCase() + type.slice(1)} Data`;
+    }
+</script>
+{% endblock %}

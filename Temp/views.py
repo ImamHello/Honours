@@ -48,6 +48,15 @@ def index(request):
     for api in API_List:
         api['time'] = datetime.strptime(api['time'], "%Y-%m-%dT%H:%MZ")
 
+    for api in API_List:
+            if isinstance(api['time'], str):
+                api['time'] = datetime.strptime(api['time'], "%Y-%m-%dT%H:%MZ")  # Convert from string to datetime
+            elif isinstance(api['time'], datetime):
+                api['time'] = api['time']  # If it's already a datetime object, leave it as is
+    today = datetime.today().date()
+
+    API_List = [api for api in API_List if api['time'].date() == today]
+
     context = {
         "temp_list": temp_list,
         "API_List": API_List,
