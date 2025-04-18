@@ -1,0 +1,33 @@
+{% if temp_list %}
+    <ul>
+    {% for hardware in temp_list %}
+        <li style="color: green;">
+            Temperature: {{ hardware.hardTemp }}°C 
+            (Published: {{ hardware.pub_date|date:"H:i d-m-y " }})
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No hardware data available.</p>
+{% endif %}
+
+<br>
+<br>
+<br>
+<br>    
+<br>
+<br>
+<br>
+
+{% if API_List %}
+    <ul>
+    {% for api in API_List %}
+        <li>
+            Temperature: {{ api.screenTemperature }}°C 
+            (Published: {{ api.time|date:"H:i d-m-y " }})
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No API data available.</p>
+{% endif %}
