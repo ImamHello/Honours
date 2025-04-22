@@ -94,3 +94,54 @@ def Get_Temp():
             print(f"Database error: {e}")
     else:
         print("No temperature reading available.")
+
+
+
+def check_temperature():
+    try:
+        # Get the latest hardware temperature
+        latest_temp = Hardware.objects.latest('pub_date')
+        current_time = timezone.now()
+
+        # Check if temperature is at risk of freezing and trigger the solinoid if so
+        if latest_temp.hardTemp <= 0:
+            print("Warning: The temperature is <= 0°C!")
+            Trigger_Solenoid()
+
+        # Check if data is failing to update 
+        time_diff = current_time - latest_temp.pub_date
+        if time_diff > timedelta(hours=1):
+            print("Warning: It has been over an hour since the last temperature update!")
+
+            # Try to use the latest API data as fallback plan
+            try:
+                latest_api = API.objects.latest('pub_date')
+                api_data = json.loads(latest_api.apiTemp) if isinstance(latest_api.apiTemp, str) else latest_api.apiTemp
+
+                # Get current hour in UTC and match API's format
+                current_hour = timezone.now().astimezone(timezone.utc).replace(minute=0, second=0, microsecond=0)
+                current_hour_str = current_hour.isoformat().replace('+00:00', 'Z')
+
+                time_series = api_data['features'][0]['properties']['timeSeries']
+                match = next((entry for entry in time_series if entry['time'] == current_hour_str), None)
+
+                if match:
+                    screen_temp = match.get('screenTemperature')
+                    print(f"Fallback API temperature at {current_hour_str}: {screen_temp}°C")
+                    # Optional: Trigger solenoid based on fallback temperature
+                    if screen_temp <= 0:
+                        print("Warning (API): Fallback temperature is <= 0°C!")
+                        Trigger_Solenoid()
+                else:
+                    print(f"No matching API temperature found for {current_hour_str}")
+            except API.DoesNotExist:
+                print("No API data available for fallback.")
+            except Exception as e:
+                print(f"Error while handling API fallback: {e}")
+        else:
+            print(f"Temperature is fine: {latest_temp.hardTemp}°C")
+            print(f"Last updated: {latest_temp.pub_date}")
+
+    except Hardware.DoesNotExist:
+        print("No hardware temperature data available.")
+
