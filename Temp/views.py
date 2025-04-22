@@ -2,12 +2,19 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Hardware, API, Postcode
 import pandas as pd
-from datetime import datetime,timedelta
 import json
+from datetime import datetime, timedelta
 from .API_Temp import requestforTempAPI
-from .Hardware import Get_Temp,Trigger_Solenoid
+from .Hardware import Get_Temp, Trigger_Solenoid
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils import timezone
+import RPi.GPIO as GPIO
+from django.utils import timezone
+import asyncio
+import time
+from bleak import BleakClient, BleakScanner
+import sqlite3
+
 
 # Scheduler setup
 scheduler = BackgroundScheduler()
