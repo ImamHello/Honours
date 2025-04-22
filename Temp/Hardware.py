@@ -1,9 +1,3 @@
-import RPi.GPIO as GPIO
-import time
-import asyncio
-from bleak import BleakClient, BleakScanner
-
-
 
 def Trigger_Solenoid():
 
@@ -32,10 +26,7 @@ def Trigger_Solenoid():
         print("GPIO cleanup complete")
 
 
-import asyncio
-import sqlite3
-from datetime import datetime
-from bleak import BleakClient, BleakScanner
+
 
 def Get_Temp():
     SERVICE_UUID = "ebe0ccb0-7a0a-4b0c-8a1a-6ff2997da3a6"
