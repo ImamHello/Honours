@@ -7,6 +7,7 @@ import json
 from .API_Temp import requestforTempAPI
 from .Hardware import Get_Temp,Trigger_Solenoid
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.utils import timezone
 
 
 # Scheduler setup
@@ -16,12 +17,15 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(Get_Temp, 'interval', minutes=10)
 scheduler.add_job(requestforTempAPI, 'interval', days=1)
 
+scheduler.add_job(check_temperature, 'interval', minutes=11)
+
+
 scheduler.start()
 print("Scheduler started")
 
 #requestforTempAPI()
 #Get_Temp()
-Trigger_Solenoid()
+#Trigger_Solenoid()
 
 def index(request):
     # Fetch the latest 5 Hardware temperature records
