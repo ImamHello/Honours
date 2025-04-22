@@ -5,7 +5,7 @@ import pandas as pd
 import json
 from datetime import datetime, timedelta
 from .API_Temp import requestforTempAPI
-from .Hardware import Get_Temp, Trigger_Solenoid
+from .Hardware import Get_Temp, Trigger_Solenoid,check_temperature
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils import timezone
 import RPi.GPIO as GPIO
